@@ -69,6 +69,11 @@ namespace SuperMegaJeuDuPatrickPong
 };
 
 
+        // Au début de la classe FormulaireDuKrabsKrusty, ajoutez ces variables
+        private List<IRaquetteEffet> effetsRaquetteGauche = new List<IRaquetteEffet>();
+        private List<IRaquetteEffet> effetsRaquetteDroite = new List<IRaquetteEffet>();
+        private int compteurProchainEffetRaquette = 900; // 15 secondes à 60fps
+
         public FormulaireDuKrabsKrusty()
         {
             InitializeComponent();
@@ -288,18 +293,41 @@ namespace SuperMegaJeuDuPatrickPong
             }
 
             // Dessin des raquettes en couleur corail - COMME MES JOLIS SHORTS CARRÉS!
-            using (LinearGradientBrush pinceau = new LinearGradientBrush(
-                new Point(0, 0), new Point(15, 0),
-                Color.DeepPink, Color.HotPink))
+            bool raquetteGaucheDessineeParEffet = false;
+            foreach (var effetRaquette in effetsRaquetteGauche)
             {
-                dessinateurPatrick.FillRectangle(pinceau, raquetteDuBobGauche);
+                effetRaquette.DessinerEffetSpecial(dessinateurPatrick, raquetteDuBobGauche);
+                raquetteGaucheDessineeParEffet = true;
+                break; // On prend juste le premier effet
             }
 
-            using (LinearGradientBrush pinceau = new LinearGradientBrush(
-                new Point(zoneDeBikiniBas.Width, 0), new Point(zoneDeBikiniBas.Width - 15, 0),
-                Color.DeepPink, Color.HotPink))
+            bool raquetteDroiteDessineeParEffet = false;
+            foreach (var effetRaquette in effetsRaquetteDroite)
             {
-                dessinateurPatrick.FillRectangle(pinceau, raquetteDuCarlooDroite);
+                effetRaquette.DessinerEffetSpecial(dessinateurPatrick, raquetteDuCarlooDroite);
+                raquetteDroiteDessineeParEffet = true;
+                break; // On prend juste le premier effet
+            }
+
+            // Dessin normal des raquettes si aucun effet ne les dessine
+            if (!raquetteGaucheDessineeParEffet)
+            {
+                using (LinearGradientBrush pinceau = new LinearGradientBrush(
+                    new Point(0, 0), new Point(15, 0),
+                    Color.DeepPink, Color.HotPink))
+                {
+                    dessinateurPatrick.FillRectangle(pinceau, raquetteDuBobGauche);
+                }
+            }
+
+            if (!raquetteDroiteDessineeParEffet)
+            {
+                using (LinearGradientBrush pinceau = new LinearGradientBrush(
+                    new Point(zoneDeBikiniBas.Width, 0), new Point(zoneDeBikiniBas.Width - 15, 0),
+                    Color.DeepPink, Color.HotPink))
+                {
+                    dessinateurPatrick.FillRectangle(pinceau, raquetteDuCarlooDroite);
+                }
             }
 
             // VÉRIFIER SI UN EFFET DOIT DESSINER LA BALLE À SA FAÇON - COMME MA MAISON ANANAS UNIQUE!
@@ -456,6 +484,9 @@ namespace SuperMegaJeuDuPatrickPong
             MettreAJourBonus();
             MettreAJourEffets();
 
+            // MISE À JOUR DES EFFETS DE RAQUETTE - COMME QUAND JE NETTOIE MES SPATULES !
+            MettreAJourEffetsRaquette();
+
             // Décrémenter le compteur d'affichage du nom d'effet
             if (dureeAffichageNomEffet > 0)
                 dureeAffichageNomEffet--;
@@ -480,6 +511,30 @@ namespace SuperMegaJeuDuPatrickPong
             // Limite la taille de la traînée
             if (traineeCelesteBulle.Count > 15) traineeCelesteBulle.RemoveAt(0);
 
+            // Appliquer les effets de raquette
+            int vitesseRaquetteGauche = vitesseRaquette;
+            int vitesseRaquetteDroite = vitesseRaquette / 2; // Vitesse originale de l'IA
+
+            foreach (var effet in effetsRaquetteGauche)
+            {
+                effet.AppliquerEffet(ref raquetteDuBobGauche, ref vitesseRaquetteGauche);
+            }
+
+            foreach (var effet in effetsRaquetteDroite)
+            {
+                effet.AppliquerEffet(ref raquetteDuCarlooDroite, ref vitesseRaquetteDroite);
+            }
+
+            // Utiliser les vitesses modifiées pour les déplacements
+            if (toucheHautAppuyee && raquetteDuBobGauche.Y > 0)
+                raquetteDuBobGauche.Y -= vitesseRaquetteGauche;
+
+            if (toucheBasAppuyee && raquetteDuBobGauche.Y + raquetteDuBobGauche.Height < zoneDeBikiniBas.Height)
+                raquetteDuBobGauche.Y += vitesseRaquetteGauche;
+
+
+
+
             // Déplacement de la raquette gauche (joueur) - ALLEZ BOB, TU PEUX LE FAIRE!
             if (toucheHautAppuyee && raquetteDuBobGauche.Y > 0)
                 raquetteDuBobGauche.Y -= vitesseRaquette;
@@ -487,8 +542,15 @@ namespace SuperMegaJeuDuPatrickPong
             if (toucheBasAppuyee && raquetteDuBobGauche.Y + raquetteDuBobGauche.Height < zoneDeBikiniBas.Height)
                 raquetteDuBobGauche.Y += vitesseRaquette;
 
-            // Intelligence artificielle simple pour la raquette droite - CARLO EST RUSÉ COMME PLANKTON!
-            DeplacementRaquetteCarlooDroite();
+            // L'IA suit la balle mais avec un peu de délai - CARLO EST PRESQUE AUSSI MALIN QUE MOI!
+            int centreRaquette = raquetteDuCarlooDroite.Y + raquetteDuCarlooDroite.Height / 2;
+            int centreBalle = balleDeMeduseJoyeuse.Y + balleDeMeduseJoyeuse.Height / 2;
+
+            // Pour l'intelligence artificielle, utiliser la vitesse modifiée
+            if (centreBalle < centreRaquette - 10 && raquetteDuCarlooDroite.Y > 0)
+                raquetteDuCarlooDroite.Y -= vitesseRaquette;
+            else if (centreBalle > centreRaquette + 10 && raquetteDuCarlooDroite.Y + raquetteDuCarlooDroite.Height < zoneDeBikiniBas.Height)
+                raquetteDuCarlooDroite.Y += vitesseRaquetteDroite;
 
             // Déplacement de la balle - ELLE FLOTTE COMME UNE MÉDUSE!
             balleDeMeduseJoyeuse.X += vitesseBalleMeduse_X;
@@ -589,6 +651,103 @@ namespace SuperMegaJeuDuPatrickPong
                 obstaclesSousMarins.Add(nouvelObstacle);
             }
         }
+        private void MettreAJourEffetsRaquette()
+        {
+            // Faire apparaître un nouvel effet de raquette de temps en temps
+            compteurProchainEffetRaquette--;
+            if (compteurProchainEffetRaquette <= 0)
+            {
+                // Temps aléatoire avant le prochain effet (entre 15 et 30 secondes)
+                compteurProchainEffetRaquette = aléatoireCommePatrick.Next(900, 1800);
+
+                // Créer un effet aléatoire - COMME LES SURPRISES DANS UNE BOÎTE DE KRABBY PATTY !
+                AjouterEffetRaquetteAleatoire();
+            }
+
+            // Mettre à jour les effets de la raquette gauche
+            foreach (var effet in effetsRaquetteGauche.ToArray())
+            {
+                effet.MettreAJour();
+
+                // Supprimer les effets terminés
+                if (effet.TempsRestant <= 0)
+                {
+                    effetsRaquetteGauche.Remove(effet);
+
+                    // Réinitialiser la taille de la raquette si nécessaire
+                    raquetteDuBobGauche = new Rectangle(20, zoneDeBikiniBas.Height / 2 - 50, 15, 100);
+
+                    // Annoncer que l'effet est terminé
+                    nomEffetEnCours = "Effet raquette terminé!";
+                    dureeAffichageNomEffet = 60; // 1 seconde
+                }
+            }
+
+            // Mettre à jour les effets de la raquette droite
+            foreach (var effet in effetsRaquetteDroite.ToArray())
+            {
+                effet.MettreAJour();
+
+                // Supprimer les effets terminés
+                if (effet.TempsRestant <= 0)
+                {
+                    effetsRaquetteDroite.Remove(effet);
+
+                    // Réinitialiser la taille de la raquette si nécessaire
+                    raquetteDuCarlooDroite = new Rectangle(zoneDeBikiniBas.Width - 35, zoneDeBikiniBas.Height / 2 - 50, 15, 100);
+                }
+            }
+        }
+
+        private void AjouterEffetRaquetteAleatoire()
+        {
+            // Choisir un type d'effet aléatoire - COMME LES JOUETS SURPRISES DANS LES BOÎTES DE CÉRÉALES !
+            int typeEffet = aléatoireCommePatrick.Next(4); // 0 à 3 pour nos 4 types d'effets
+
+            // Choisir quelle raquette reçoit l'effet (50% de chance pour chaque)
+            bool pourRaquetteGauche = aléatoireCommePatrick.Next(2) == 0;
+
+            IRaquetteEffet nouvelEffet = null;
+
+            switch (typeEffet)
+            {
+                case 0:
+                    nouvelEffet = new EffetRaquetteBob(pourRaquetteGauche);
+                    break;
+                case 1:
+                    nouvelEffet = new EffetRaquetteFeu(pourRaquetteGauche);
+                    break;
+                case 2:
+                    nouvelEffet = new EffetRaquetteGeante(pourRaquetteGauche);
+                    break;
+                case 3:
+                    nouvelEffet = new EffetRaquetteMeduse(pourRaquetteGauche);
+                    break;
+            }
+
+            if (nouvelEffet != null)
+            {
+                // Supprimer les effets précédents (un seul à la fois par raquette)
+                if (pourRaquetteGauche)
+                {
+                    effetsRaquetteGauche.Clear();
+                    effetsRaquetteGauche.Add(nouvelEffet);
+                }
+                else
+                {
+                    effetsRaquetteDroite.Clear();
+                    effetsRaquetteDroite.Add(nouvelEffet);
+                }
+
+                // Afficher le nom de l'effet - COMME UNE ANNONCE AU KRUSTY KRAB !
+                nomEffetEnCours = nouvelEffet.NomEffet + (pourRaquetteGauche ? " (BOB)" : " (CARLO)");
+                dureeAffichageNomEffet = 120; // Afficher pendant 2 secondes
+
+                // Jouer un son joyeux - COMME QUAND JE TROUVE UNE MÉDUSE RARE !
+                Task.Run(() => musiqueDuFondMarin.JouerBipVictoire());
+            }
+        }
+
         private void MettreAJourBonus()
         {
             // Faire apparaître un nouveau bonus de temps en temps
@@ -734,14 +893,7 @@ namespace SuperMegaJeuDuPatrickPong
 
         private void DeplacementRaquetteCarlooDroite()
         {
-            // L'IA suit la balle mais avec un peu de délai - CARLO EST PRESQUE AUSSI MALIN QUE MOI!
-            int centreRaquette = raquetteDuCarlooDroite.Y + raquetteDuCarlooDroite.Height / 2;
-            int centreBalle = balleDeMeduseJoyeuse.Y + balleDeMeduseJoyeuse.Height / 2;
 
-            if (centreBalle < centreRaquette - 10 && raquetteDuCarlooDroite.Y > 0)
-                raquetteDuCarlooDroite.Y -= vitesseRaquette / 2;
-            else if (centreBalle > centreRaquette + 10 && raquetteDuCarlooDroite.Y + raquetteDuCarlooDroite.Height < zoneDeBikiniBas.Height)
-                raquetteDuCarlooDroite.Y += vitesseRaquette / 2;
         }
 
         private void ReinitialiserBalleMeduse()
@@ -845,6 +997,11 @@ namespace SuperMegaJeuDuPatrickPong
                 dureeAffichagePsychedelique = 300; // 5 secondes
                 compteurCouleurPsychedelique = aléatoireCommePatrick.Next(0, 360);
                 Task.Run(() => musiqueDuFondMarin.JouerBipVictoire());
+            }
+            // TOUCHE R POUR CRÉER UN EFFET DE RAQUETTE IMMÉDIATEMENT - POUR LE TEST !
+            else if (e.KeyCode == Keys.R)
+            {
+                AjouterEffetRaquetteAleatoire();
             }
 
         }
