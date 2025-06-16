@@ -57,6 +57,18 @@ namespace SuperMegaJeuDuPatrickPong
 
         private List<IObstacle> obstaclesSousMarins = new List<IObstacle>();
         private int compteurProchainObstacle = 300; // Délai avant le premier obstacle
+
+
+        private bool fondPsychedeliqueActif = false;
+        private int dureeAffichagePsychedelique = 0;
+        private int compteurCouleurPsychedelique = 0;
+        private int delaiProchainPsychedelique = 600; // 10 secondes à 60fps
+        private Color[] couleursPsychedeliques = new Color[] {
+    Color.Magenta, Color.BlueViolet, Color.DeepPink,
+    Color.Gold, Color.Lime, Color.Cyan, Color.Orange
+};
+
+
         public FormulaireDuKrabsKrusty()
         {
             InitializeComponent();
@@ -105,6 +117,114 @@ namespace SuperMegaJeuDuPatrickPong
         {
             Graphics dessinateurPatrick = e.Graphics;
             dessinateurPatrick.SmoothingMode = SmoothingMode.AntiAlias;
+
+
+            // FOND PSYCHEDELIQUE MAGIQUE - COMME LA FOIS OÙ MOI ET PATRICK SOMMES ALLÉS DANS NOTRE BOX D'IMAGINATION !
+            if (fondPsychedeliqueActif)
+            {
+                // Dessiner plusieurs cercles concentriques colorés qui tournent
+                using (GraphicsPath cheminPsychedelique = new GraphicsPath())
+                {
+                    int nombreCercles = 8;
+                    for (int i = 0; i < nombreCercles; i++)
+                    {
+                        // Angle de rotation qui dépend du compteur
+                        double angle = compteurCouleurPsychedelique / 10.0 + i * Math.PI / 4;
+
+                        // Position du cercle qui tourne
+                        int centreX = zoneDeBikiniBas.Width / 2 + (int)(Math.Sin(angle) * zoneDeBikiniBas.Width / 4);
+                        int centreY = zoneDeBikiniBas.Height / 2 + (int)(Math.Cos(angle) * zoneDeBikiniBas.Height / 4);
+
+                        // Taille du cercle (plus grand pour les premiers)
+                        int taille = zoneDeBikiniBas.Width - i * 100;
+                        if (taille < 100) taille = 100;
+
+                        // Cercle qui tourne
+                        Rectangle zoneColoree = new Rectangle(
+                            centreX - taille / 2,
+                            centreY - taille / 2,
+                            taille, taille);
+
+                        // Index de couleur qui change
+                        int indexCouleur = (compteurCouleurPsychedelique / 5 + i) % couleursPsychedeliques.Length;
+
+                        // Créer un dégradé radial
+                        cheminPsychedelique.AddEllipse(zoneColoree);
+                        using (PathGradientBrush pinceauPsyche = new PathGradientBrush(cheminPsychedelique))
+                        {
+                            // La couleur centrale est celle de notre tableau
+                            pinceauPsyche.CenterColor = Color.FromArgb(
+                                50, // Transparence pour voir le jeu derrière
+                                couleursPsychedeliques[indexCouleur]);
+
+                            // Le bord est transparent
+                            pinceauPsyche.SurroundColors = new Color[] { Color.FromArgb(0, Color.White) };
+
+                            // Dessiner le cercle coloré
+                            dessinateurPatrick.FillEllipse(pinceauPsyche, zoneColoree);
+                        }
+
+                        // Réinitialiser le chemin pour le prochain cercle
+                        cheminPsychedelique.Reset();
+                    }
+                }
+
+                // Dessiner des spirales tournantes
+                for (int i = 0; i < 3; i++)
+                {
+                    // Angle initial de la spirale
+                    double angleSpiral = compteurCouleurPsychedelique / 15.0 + i * Math.PI * 2 / 3;
+                    int indexCouleur = (compteurCouleurPsychedelique / 10 + i) % couleursPsychedeliques.Length;
+
+                    // Dessiner la spirale
+                    using (Pen spiralPen = new Pen(Color.FromArgb(100, couleursPsychedeliques[indexCouleur]), 4))
+                    {
+                        Point[] pointsSpirales = new Point[36];
+                        for (int j = 0; j < 36; j++)
+                        {
+                            double angle = angleSpiral + j * Math.PI / 9;
+                            int rayon = 20 + j * 15;
+                            pointsSpirales[j] = new Point(
+                                zoneDeBikiniBas.Width / 2 + (int)(Math.Cos(angle) * rayon),
+                                zoneDeBikiniBas.Height / 2 + (int)(Math.Sin(angle) * rayon)
+                            );
+                        }
+
+                        if (pointsSpirales.Length > 1)
+                            dessinateurPatrick.DrawCurve(spiralPen, pointsSpirales, 0.5f);
+                    }
+                }
+
+                // Texte "IMAGINATION" qui tourne autour du centre
+                using (Font policePsychedelique = new Font("Comic Sans MS", 24, FontStyle.Bold))
+                {
+                    string texteImaginaire = "IMAGINATIOOOON";
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        double angleTexte = compteurCouleurPsychedelique / 20.0 + i * Math.PI * 2 / 5;
+                        int indexCouleur = (compteurCouleurPsychedelique / 15 + i) % couleursPsychedeliques.Length;
+
+                        // Position du texte qui tourne
+                        float texteX = zoneDeBikiniBas.Width / 2 + (float)(Math.Cos(angleTexte) * zoneDeBikiniBas.Width / 3) - 100;
+                        float texteY = zoneDeBikiniBas.Height / 2 + (float)(Math.Sin(angleTexte) * zoneDeBikiniBas.Height / 3) - 20;
+
+                        // Dessiner le texte avec une ombre
+                        using (SolidBrush pinceauOmbre = new SolidBrush(Color.FromArgb(80, 0, 0, 0)))
+                        using (SolidBrush pinceauTexte = new SolidBrush(Color.FromArgb(180, couleursPsychedeliques[indexCouleur])))
+                        {
+                            // Ombre d'abord
+                            dessinateurPatrick.DrawString(texteImaginaire, policePsychedelique, pinceauOmbre,
+                                texteX + 3, texteY + 3);
+
+                            // Puis le texte
+                            dessinateurPatrick.DrawString(texteImaginaire, policePsychedelique, pinceauTexte,
+                                texteX, texteY);
+                        }
+                    }
+                }
+            }
+
 
             // D'ABORD LES MÉDUSES EN ARRIÈRE-PLAN! OOOOOOOH!
             foreach (var meduse in medusesDansantes)
@@ -269,6 +389,40 @@ namespace SuperMegaJeuDuPatrickPong
 
         private void minuteurDuMedusePatient_Tick(object sender, EventArgs e)
         {
+            // MISE À JOUR DE L'EFFET PSYCHÉDÉLIQUE - COMME LA DANSE DE MÉDUSES DANS MA TÊTE !
+            if (fondPsychedeliqueActif)
+            {
+                // Mettre à jour le compteur de couleur
+                compteurCouleurPsychedelique += 3;
+                if (compteurCouleurPsychedelique > 360) compteurCouleurPsychedelique = 0;
+
+                // Décrémenter la durée d'affichage
+                dureeAffichagePsychedelique--;
+                if (dureeAffichagePsychedelique <= 0)
+                {
+                    fondPsychedeliqueActif = false;
+                }
+            }
+            else
+            {
+                // Décrémenter le délai avant la prochaine apparition
+                delaiProchainPsychedelique--;
+                if (delaiProchainPsychedelique <= 0)
+                {
+                    // Temps aléatoire avant la prochaine apparition (entre 10 et 30 secondes)
+                    delaiProchainPsychedelique = aléatoireCommePatrick.Next(600, 1800);
+
+                    // Activer l'effet psychédélique pour 3-6 secondes
+                    fondPsychedeliqueActif = true;
+                    dureeAffichagePsychedelique = aléatoireCommePatrick.Next(180, 360);
+                    compteurCouleurPsychedelique = aléatoireCommePatrick.Next(0, 360);
+
+                    // Son spécial quand l'effet apparaît
+                    Task.Run(() => musiqueDuFondMarin.JouerBipVictoire());
+                }
+            }
+
+
             // MUSIQUE EN BOUCLE - COMME UNE MÉLODIE SANS FIN!
             if (jouerMusiqueEnBoucle && !musiqueDuFondMarin.EstEnTrainDeJouer)
             {
@@ -684,6 +838,15 @@ namespace SuperMegaJeuDuPatrickPong
             {
                 AjouterObstacleAleatoire();
             }
+            // TOUCHE P POUR ACTIVER L'EFFET PSYCHÉDÉLIQUE - COMME QUAND J'APPUIE SUR LE BOUTON DE MON IMAGINATION !
+            else if (e.KeyCode == Keys.P)
+            {
+                fondPsychedeliqueActif = true;
+                dureeAffichagePsychedelique = 300; // 5 secondes
+                compteurCouleurPsychedelique = aléatoireCommePatrick.Next(0, 360);
+                Task.Run(() => musiqueDuFondMarin.JouerBipVictoire());
+            }
+
         }
 
         private void FormulaireDuKrabsKrusty_KeyUp(object sender, KeyEventArgs e)
