@@ -41,3 +41,4 @@ testem.log
 .DS_Store
 Thumbs.db
 /.vs/Pong/CopilotIndices/17.14.719.50355
+*.vsidx
