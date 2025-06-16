@@ -1,0 +1,73 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\DEV\\VibeBob\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{6C0C2A62-8839-4BF5-BC3C-C06C1C2861F8}|Pong.csproj|c:\\dev\\vibebob\\particule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C0C2A62-8839-4BF5-BC3C-C06C1C2861F8}|Pong.csproj|solutionrelative:particule.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C0C2A62-8839-4BF5-BC3C-C06C1C2861F8}|Pong.csproj|c:\\dev\\vibebob\\formulairedukrabskrusty.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6C0C2A62-8839-4BF5-BC3C-C06C1C2861F8}|Pong.csproj|solutionrelative:formulairedukrabskrusty.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6C0C2A62-8839-4BF5-BC3C-C06C1C2861F8}|Pong.csproj|C:\\DEV\\VibeBob\\formulairedukrabskrusty.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{6C0C2A62-8839-4BF5-BC3C-C06C1C2861F8}|Pong.csproj|solutionrelative:formulairedukrabskrusty.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Particule.cs",
+              "DocumentMoniker": "C:\\DEV\\VibeBob\\Particule.cs",
+              "RelativeDocumentMoniker": "Particule.cs",
+              "ToolTip": "C:\\DEV\\VibeBob\\Particule.cs",
+              "RelativeToolTip": "Particule.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABkAAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-16T18:49:41.1Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "FormulaireDuKrabsKrusty.cs",
+              "DocumentMoniker": "C:\\DEV\\VibeBob\\FormulaireDuKrabsKrusty.cs",
+              "RelativeDocumentMoniker": "FormulaireDuKrabsKrusty.cs",
+              "ToolTip": "C:\\DEV\\VibeBob\\FormulaireDuKrabsKrusty.cs",
+              "RelativeToolTip": "FormulaireDuKrabsKrusty.cs",
+              "ViewState": "AgIAAGMBAAAAAAAAAAAhwLgBAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-16T18:33:05.164Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "FormulaireDuKrabsKrusty.cs [Conception]",
+              "DocumentMoniker": "C:\\DEV\\VibeBob\\FormulaireDuKrabsKrusty.cs",
+              "RelativeDocumentMoniker": "FormulaireDuKrabsKrusty.cs",
+              "ToolTip": "C:\\DEV\\Pong\\FormulaireDuKrabsKrusty.cs [Conception]",
+              "RelativeToolTip": "..\\Pong\\FormulaireDuKrabsKrusty.cs [Conception]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-16T18:32:50.174Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
