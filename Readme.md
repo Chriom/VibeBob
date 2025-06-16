@@ -11,3 +11,5 @@ Flèche pour bouger la raquette
 M : Jouer la musique en boucle
 
 B : Faire apparaître un bonus aléatoire
+
+O : Ajouter un obstacle

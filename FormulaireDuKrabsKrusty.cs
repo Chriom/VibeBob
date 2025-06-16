@@ -54,6 +54,9 @@ namespace SuperMegaJeuDuPatrickPong
         // OH BARNACLES! C'est un générateur aléatoire!
         private Random aléatoireCommePatrick = new Random();
 
+
+        private List<IObstacle> obstaclesSousMarins = new List<IObstacle>();
+        private int compteurProchainObstacle = 300; // Délai avant le premier obstacle
         public FormulaireDuKrabsKrusty()
         {
             InitializeComponent();
@@ -107,6 +110,16 @@ namespace SuperMegaJeuDuPatrickPong
             foreach (var meduse in medusesDansantes)
             {
                 meduse.Dessiner(dessinateurPatrick);
+            }
+
+            // Après le dessin des méduses et avant le dessin des bonus:
+            // DESSINER LES OBSTACLES DANGEREUX - COMME LES PIÈGES DE PLANKTON!
+            foreach (var obstacle in obstaclesSousMarins)
+            {
+                if (obstacle.EstActif)
+                {
+                    obstacle.Dessiner(dessinateurPatrick);
+                }
             }
 
             // DESSINER LES BONUS MARINS - COMME DES CADEAUX SOUS-MARINS!
@@ -268,6 +281,10 @@ namespace SuperMegaJeuDuPatrickPong
                 meduse.Deplacer(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
             }
 
+            // Après la mise à jour des méduses:
+            // MISE À JOUR DES OBSTACLES - COMME LES PLANS DIABOLIQUES DE PLANKTON!
+            MettreAJourObstacles();
+
             // Animation de but - OH LA LA QUELLE FÊTE!
             if (animationButEnCours)
             {
@@ -368,6 +385,56 @@ namespace SuperMegaJeuDuPatrickPong
             zoneDeBikiniBas.Invalidate();
         }
 
+
+        // Ajouter la méthode pour gérer les obstacles
+        private void MettreAJourObstacles()
+        {
+            // Faire apparaître un nouvel obstacle de temps en temps
+            compteurProchainObstacle--;
+            if (compteurProchainObstacle <= 0)
+            {
+                // Temps aléatoire avant le prochain obstacle (entre 5 et 15 secondes)
+                compteurProchainObstacle = aléatoireCommePatrick.Next(300, 900);
+
+                // Créer un obstacle aléatoire - COMME LES SURPRISES DANS L'OCÉAN!
+                AjouterObstacleAleatoire();
+            }
+
+            // Vérifier les collisions avec la balle
+            foreach (var obstacle in obstaclesSousMarins.ToArray())
+            {
+                // Mettre à jour l'obstacle
+                obstacle.Mettre_A_Jour();
+
+                // Gérer la collision avec la balle
+                obstacle.GererCollision(ref balleDeMeduseJoyeuse, ref vitesseBalleMeduse_X, ref vitesseBalleMeduse_Y);
+            }
+
+            // Supprimer les obstacles inactifs - COMME QUAND JE NETTOIE MON ANANAS!
+            obstaclesSousMarins.RemoveAll(obstacle => !obstacle.EstActif);
+        }
+
+        private void AjouterObstacleAleatoire()
+        {
+            // Choisir un type d'obstacle aléatoire - COMME LES DANGERS DE LA MER!
+            int typeObstacle = aléatoireCommePatrick.Next(2); // 0 ou 1 pour Plankton ou PateDeCrabe
+            IObstacle nouvelObstacle = null;
+
+            switch (typeObstacle)
+            {
+                case 0:
+                    nouvelObstacle = new Plankton(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+                case 1:
+                    nouvelObstacle = new PateDeCrabe(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+            }
+
+            if (nouvelObstacle != null)
+            {
+                obstaclesSousMarins.Add(nouvelObstacle);
+            }
+        }
         private void MettreAJourBonus()
         {
             // Faire apparaître un nouveau bonus de temps en temps
@@ -612,6 +679,10 @@ namespace SuperMegaJeuDuPatrickPong
             else if (e.KeyCode == Keys.B)
             {
                 AjouterBonusAleatoire();
+            }
+            else if (e.KeyCode == Keys.O)
+            {
+                AjouterObstacleAleatoire();
             }
         }
 
