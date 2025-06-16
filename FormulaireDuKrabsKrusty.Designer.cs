@@ -10,10 +10,6 @@
             {
                 if (composants != null)
                     composants.Dispose();
-
-                // Nettoyer les ressources audio
-                if (musiqueDuFondMarin != null)
-                    musiqueDuFondMarin.Nettoyer();
             }
             base.Dispose(disposing);
         }

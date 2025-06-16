@@ -22,6 +22,13 @@ namespace SuperMegaJeuDuPatrickPong
         private bool effetArcEnCielMarin = true;
         private int compteurRainbowPatrick = 0;
 
+        // SYSTÈME DE BONUS ET EFFETS - COMME LES SURPRISES DANS LES BOÎTES DE CÉRÉALES!
+        private List<IBonus> bonusMarins = new List<IBonus>();
+        private List<IEffet> effetsActifs = new List<IEffet>();
+        private string nomEffetEnCours = "";
+        private int compteurProchainBonus = 200; // Délai avant le premier bonus
+        private int dureeAffichageNomEffet = 0;
+
         // LA MUSIQUE DU CRABE CROUSTILLANT! OH YEAAAAH!
         private ChefDOrchestreDuKrustyKrab musiqueDuFondMarin;
         private bool jouerMusiqueEnBoucle = false;
@@ -102,6 +109,15 @@ namespace SuperMegaJeuDuPatrickPong
                 meduse.Dessiner(dessinateurPatrick);
             }
 
+            // DESSINER LES BONUS MARINS - COMME DES CADEAUX SOUS-MARINS!
+            foreach (var bonus in bonusMarins)
+            {
+                if (bonus.EstActif)
+                {
+                    bonus.Dessiner(dessinateurPatrick);
+                }
+            }
+
             // LA TRAÎNÉE MAGIQUE DE LA BALLE - COMME UNE ÉTOILE FILANTE DE PATRICK!
             if (traineeCelesteBulle.Count > 1)
             {
@@ -153,27 +169,41 @@ namespace SuperMegaJeuDuPatrickPong
                 dessinateurPatrick.FillRectangle(pinceau, raquetteDuCarlooDroite);
             }
 
-            // Dessin de la balle avec un effet brillant - COMME MON SOURIRE ÉCLATANT!
-            using (PathGradientBrush pinceau = new PathGradientBrush(
-                new PointF[] {
-                    new PointF(balleDeMeduseJoyeuse.X, balleDeMeduseJoyeuse.Y),
-                    new PointF(balleDeMeduseJoyeuse.X + balleDeMeduseJoyeuse.Width, balleDeMeduseJoyeuse.Y),
-                    new PointF(balleDeMeduseJoyeuse.X + balleDeMeduseJoyeuse.Width, balleDeMeduseJoyeuse.Y + balleDeMeduseJoyeuse.Height),
-                    new PointF(balleDeMeduseJoyeuse.X, balleDeMeduseJoyeuse.Y + balleDeMeduseJoyeuse.Height)
-                }))
+            // VÉRIFIER SI UN EFFET DOIT DESSINER LA BALLE À SA FAÇON - COMME MA MAISON ANANAS UNIQUE!
+            bool balleDessineeParEffet = false;
+            foreach (var effet in effetsActifs)
             {
-                pinceau.CenterColor = couleurMagiqueDeLaBalle;
-                pinceau.SurroundColors = new Color[] { Color.FromArgb(200, couleurMagiqueDeLaBalle) };
-                dessinateurPatrick.FillEllipse(pinceau, balleDeMeduseJoyeuse);
+                // L'effet dessine la balle à sa façon spéciale!
+                effet.DessinerEffetSpecial(dessinateurPatrick, balleDeMeduseJoyeuse);
+                balleDessineeParEffet = true;
+                break;  // On prend juste le premier effet actif pour dessiner la balle
             }
 
-            // Reflet sur la balle - BRILLANT COMME MA SPATULE PRÉFÉRÉE!
-            using (SolidBrush pinceau = new SolidBrush(Color.FromArgb(150, 255, 255, 255)))
+            // Dessin normal de la balle SI AUCUN EFFET NE L'A FAIT - JUSTE AU CAS OÙ!
+            if (!balleDessineeParEffet)
             {
-                dessinateurPatrick.FillEllipse(pinceau,
-                    balleDeMeduseJoyeuse.X + 5,
-                    balleDeMeduseJoyeuse.Y + 3,
-                    7, 5);
+                // Dessin de la balle avec un effet brillant - COMME MON SOURIRE ÉCLATANT!
+                using (PathGradientBrush pinceau = new PathGradientBrush(
+                    new PointF[] {
+                        new PointF(balleDeMeduseJoyeuse.X, balleDeMeduseJoyeuse.Y),
+                        new PointF(balleDeMeduseJoyeuse.X + balleDeMeduseJoyeuse.Width, balleDeMeduseJoyeuse.Y),
+                        new PointF(balleDeMeduseJoyeuse.X + balleDeMeduseJoyeuse.Width, balleDeMeduseJoyeuse.Y + balleDeMeduseJoyeuse.Height),
+                        new PointF(balleDeMeduseJoyeuse.X, balleDeMeduseJoyeuse.Y + balleDeMeduseJoyeuse.Height)
+                    }))
+                {
+                    pinceau.CenterColor = couleurMagiqueDeLaBalle;
+                    pinceau.SurroundColors = new Color[] { Color.FromArgb(200, couleurMagiqueDeLaBalle) };
+                    dessinateurPatrick.FillEllipse(pinceau, balleDeMeduseJoyeuse);
+                }
+
+                // Reflet sur la balle - BRILLANT COMME MA SPATULE PRÉFÉRÉE!
+                using (SolidBrush pinceau = new SolidBrush(Color.FromArgb(150, 255, 255, 255)))
+                {
+                    dessinateurPatrick.FillEllipse(pinceau,
+                        balleDeMeduseJoyeuse.X + 5,
+                        balleDeMeduseJoyeuse.Y + 3,
+                        7, 5);
+                }
             }
 
             // Animation spéciale quand un but est marqué - UNE EXPLOSION DE JOIE!
@@ -193,6 +223,33 @@ namespace SuperMegaJeuDuPatrickPong
 
                         dessinateurPatrick.FillEllipse(pinceau, zoneFeteVictoire);
                     }
+                }
+            }
+
+            // Affichage du nom de l'effet actif - COMME UNE ANNONCE AU KRUSTY KRAB!
+            if (dureeAffichageNomEffet > 0 && !string.IsNullOrEmpty(nomEffetEnCours))
+            {
+                using (Font police = new Font("Comic Sans MS", 16, FontStyle.Bold))
+                using (SolidBrush pinceauTexte = new SolidBrush(Color.Yellow))
+                using (SolidBrush pinceauOmbre = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
+                {
+                    StringFormat format = new StringFormat
+                    {
+                        Alignment = StringAlignment.Center,
+                        LineAlignment = StringAlignment.Center
+                    };
+
+                    // Ombre du texte
+                    dessinateurPatrick.DrawString(nomEffetEnCours, police, pinceauOmbre,
+                        zoneDeBikiniBas.Width / 2 + 2,
+                        zoneDeBikiniBas.Height / 4 + 2,
+                        format);
+
+                    // Texte principal
+                    dessinateurPatrick.DrawString(nomEffetEnCours, police, pinceauTexte,
+                        zoneDeBikiniBas.Width / 2,
+                        zoneDeBikiniBas.Height / 4,
+                        format);
                 }
             }
         }
@@ -223,6 +280,14 @@ namespace SuperMegaJeuDuPatrickPong
                     compteurAnimationBut = 0;
                 }
             }
+
+            // MISE À JOUR DES BONUS ET EFFETS - COMME MES AVENTURES QUOTIDIENNES!
+            MettreAJourBonus();
+            MettreAJourEffets();
+
+            // Décrémenter le compteur d'affichage du nom d'effet
+            if (dureeAffichageNomEffet > 0)
+                dureeAffichageNomEffet--;
 
             // Mise à jour des particules - BULLES QUI ÉCLATENT!
             MettreAJourParticules();
@@ -301,6 +366,119 @@ namespace SuperMegaJeuDuPatrickPong
 
             // Rafraîchissement de l'écran - AUSSI RAFRAÎCHISSANT QU'UN PLONGEON DANS L'OCÉAN!
             zoneDeBikiniBas.Invalidate();
+        }
+
+        private void MettreAJourBonus()
+        {
+            // Faire apparaître un nouveau bonus de temps en temps
+            compteurProchainBonus--;
+            if (compteurProchainBonus <= 0)
+            {
+                // Temps aléatoire avant le prochain bonus (entre 10 et 20 secondes)
+                compteurProchainBonus = aléatoireCommePatrick.Next(600, 1200);
+
+                // Créer un bonus aléatoire - COMME LES CADEAUX D'ANNIVERSAIRE SURPRISES!
+                AjouterBonusAleatoire();
+            }
+
+            // Vérifier si la balle collecte un bonus - COMME QUAND JE TROUVE UN SOU PAR TERRE!
+            foreach (var bonus in bonusMarins.ToArray())
+            {
+                if (bonus.EstActif && balleDeMeduseJoyeuse.IntersectsWith(bonus.Position))
+                {
+                    // Collecter le bonus et appliquer son effet
+                    IEffet nouvelEffet = bonus.Collecter();
+
+                    // Supprimer les effets précédents (un seul à la fois)
+                    effetsActifs.Clear();
+
+                    // Ajouter le nouvel effet
+                    effetsActifs.Add(nouvelEffet);
+
+                    // Afficher le nom de l'effet - COMME QUAND JE CRIE "JE SUIS PRÊÊÊT!"
+                    nomEffetEnCours = nouvelEffet.NomEffet;
+                    dureeAffichageNomEffet = 120; // Afficher pendant 2 secondes (120 frames à 60fps)
+
+                    // Jouer un son joyeux - COMME QUAND JE TROUVE UN DOLLAR!
+                    Task.Run(() => musiqueDuFondMarin.JouerBipVictoire());
+                }
+            }
+
+            // Supprimer les bonus inactifs - COMME QUAND JE NETTOIE MON ANANAS!
+            bonusMarins.RemoveAll(bonus => !bonus.EstActif);
+        }
+
+        private void MettreAJourEffets()
+        {
+            // Mettre à jour et appliquer tous les effets actifs
+            foreach (var effet in effetsActifs.ToArray())
+            {
+                effet.MettreAJour();
+
+                // Appliquer l'effet à la balle
+                effet.AppliquerEffet(ref balleDeMeduseJoyeuse, ref vitesseBalleMeduse_X, ref vitesseBalleMeduse_Y);
+
+                // Supprimer les effets terminés
+                if (effet.TempsRestant <= 0)
+                {
+                    effetsActifs.Remove(effet);
+
+                    // Réinitialiser la taille de la balle si nécessaire
+                    if (balleDeMeduseJoyeuse.Width != 20 || balleDeMeduseJoyeuse.Height != 20)
+                    {
+                        // Recentrer la balle pour éviter les téléportations
+                        int centreX = balleDeMeduseJoyeuse.X + balleDeMeduseJoyeuse.Width / 2;
+                        int centreY = balleDeMeduseJoyeuse.Y + balleDeMeduseJoyeuse.Height / 2;
+
+                        balleDeMeduseJoyeuse.Width = 20;
+                        balleDeMeduseJoyeuse.Height = 20;
+
+                        balleDeMeduseJoyeuse.X = centreX - 10;
+                        balleDeMeduseJoyeuse.Y = centreY - 10;
+                    }
+
+                    // Annoncer que l'effet est terminé
+                    nomEffetEnCours = "Effet terminé!";
+                    dureeAffichageNomEffet = 60; // 1 seconde
+                }
+            }
+        }
+
+        private void AjouterBonusAleatoire()
+        {
+            // Choisir un type de bonus aléatoire - COMME LES SAVEURS DE GLACE CHEZ GOOFY GOOBER!
+            int typeBonus = aléatoireCommePatrick.Next(7); // 0 à 6 pour 7 types de bonus
+            IBonus nouveauBonus = null;
+
+            switch (typeBonus)
+            {
+                case 0:
+                    nouveauBonus = new BonusImagination(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+                case 1:
+                    nouveauBonus = new BonusPatrick(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+                case 2:
+                    nouveauBonus = new BonusPooognon(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+                case 3:
+                    nouveauBonus = new BonusEtoileDeMer(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+                case 4:
+                    nouveauBonus = new BonusAutoEcole(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+                case 5:
+                    nouveauBonus = new BonusMeduse(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+                case 6:
+                    nouveauBonus = new BonusGary(zoneDeBikiniBas.Width, zoneDeBikiniBas.Height);
+                    break;
+            }
+
+            if (nouveauBonus != null)
+            {
+                bonusMarins.Add(nouveauBonus);
+            }
         }
 
         private void DemarrerAnimationBut(int position)
@@ -430,6 +608,11 @@ namespace SuperMegaJeuDuPatrickPong
                     Task.Run(() => musiqueDuFondMarin.JouerGeneriqueDeLeponge());
                 }
             }
+            // TOUCHE B POUR CRÉER UN BONUS IMMÉDIATEMENT - POUR LE TEST!
+            else if (e.KeyCode == Keys.B)
+            {
+                AjouterBonusAleatoire();
+            }
         }
 
         private void FormulaireDuKrabsKrusty_KeyUp(object sender, KeyEventArgs e)
@@ -439,6 +622,5 @@ namespace SuperMegaJeuDuPatrickPong
             else if (e.KeyCode == Keys.Down)
                 toucheBasAppuyee = false;
         }
-
     }
 }
